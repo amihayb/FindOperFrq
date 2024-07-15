@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Find Operating Frequency</title>
+	<link href="styles.css" rel="stylesheet">
+	<link rel="icon" href="images/logo-blau-robotics.ico" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.min.js"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+	<div class="topnav" margin-left="260px" padding="0px 10px">
+		<img height="42" src="https://www.nanomotion.com/wp-content/uploads/image-removebg-preview-8.d110a0.webp" class="attachment-full size-full wp-image-4606 entered lazyloaded" alt="logo" data-lazy-src="https://www.nanomotion.com/wp-content/uploads/image-removebg-preview-8.d110a0.webp" data-ll-status="loaded">
+		<a margin-left="260px" href=""><b>Find Operating Frequency</b></a>
+		<a onclick=postScript()>
+			Test Script</a>
+		<a onclick=downloadExampleCsv()>
+			Download Example Measurements CSV</a>
+			<img onclick="alert('Finds the best motor frequency for minimal gyro interference.\nFor anything more, contact me:\nAmihay Blau\nmail: amihay@blau-eng.co.il\nPhone: +972-54-6668902');" 
+			height="36" src="images/logo-title.svg" alt="Blau Robotics">
+	</div>
+	<div id="drop_zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+		Drag & Drop CSV File Here
+	</div>
+	<div id="plot"></div>
+
+	<div id="resultsTab" class="input-group" style="visibility: hidden">
+		X-axis Polynomial Fit:
+		<span id="p1Span" class="txt_input" contenteditable="true"
+			style="border: 1px solid black; padding: 2px;"></span><br>
+		<div class="break"></div>
+		Y-axis Polynomial Fit:
+		<span id="p2Span" class="txt_input" contenteditable="true"
+			style="border: 1px solid black; padding: 2px;"></span><br>
+		<div class="break"></div>
+		Z-axis Polynomial Fit:
+		<span id="p3Span" class="txt_input" contenteditable="true"
+			style="border: 1px solid black; padding: 2px;"></span><br>
+	</div>
+
+	<script src="OperFrq.js"></script>
+</body>
+
+</html>
