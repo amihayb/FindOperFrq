@@ -174,7 +174,7 @@ function markDataTips(obj, bestFrq) {
 
     for (var i = 0; i < bestFrq.length; i++) {
         annotate_text = 'Frq. = ' + obj.MFREQ[bestFrq[i]]/1000 +
-            ' Hz,<br> Power = ' + obj.powDist[bestFrq[i]].toPrecision(4);
+            ' kHz,<br> Power = ' + obj.powDist[bestFrq[i]].toPrecision(4);
 
         annotation = {
             text: annotate_text,
