@@ -31,29 +31,34 @@ function handleDrop(event) {
 
         csvData.ax0 = evalFrq(csvData.ax0);
         csvData.ax1 = evalFrq(csvData.ax1);
-        csvData.axC = combineAxes(csvData);
+        //csvData.axC = combineAxes(csvData);
         
-        var bestFrq = findLocalMinima(csvData.axC.powDist);
+        // var bestFrq = findLocalMinima(csvData.axC.powDist);
+        var bestFrq0 = findLocalMinimaWithWindow(csvData.ax0.powDist, 5);
+        var bestFrq1 = findLocalMinimaWithWindow(csvData.ax1.powDist, 5);
+        
+        console.log(bestFrq0);
+        console.log(bestFrq1);
 
-        console.log(bestFrq);
-
-        plotMe(csvData, bestFrq);
-        markDataTips(csvData.axC, bestFrq);
+        plotMe('plot_TR', csvData.ax0, bestFrq0, 'Ax0 ');
+        plotMe('plot_EL', csvData.ax1, bestFrq1, 'Ax1 ');
+        markDataTips('plot_TR', csvData.ax0, bestFrq0);
+        markDataTips('plot_EL', csvData.ax1, bestFrq1);
     };
 
     reader.readAsText(file);
 }
 
 
-function plotMe(csvData, bestFrq) {
+function plotMe(plot_target, csvData, bestFrq, tit) {
     var traces = [];
 
     // Create traces for each y vector
 
-    // Gyro STD ax0
+    // Gyro STD
     traces.push({
-        x: csvData.ax0.MFREQ,
-        y: csvData.ax0.GRAWX_std,
+        x: csvData.MFREQ,
+        y: csvData.GRAWX_std,
         yaxis: 'y1',
         type: 'scatter',
         name: 'GRAWX std',
@@ -62,8 +67,8 @@ function plotMe(csvData, bestFrq) {
     });
 
     traces.push({
-        x: csvData.ax0.MFREQ,
-        y: csvData.ax0.GRAWY_std,
+        x: csvData.MFREQ,
+        y: csvData.GRAWY_std,
         yaxis: 'y1',
         type: 'scatter',
         name: 'GRAWY std',
@@ -72,8 +77,8 @@ function plotMe(csvData, bestFrq) {
     });
 
     traces.push({
-        x: csvData.ax0.MFREQ,
-        y: csvData.ax0.GRAWZ_std,
+        x: csvData.MFREQ,
+        y: csvData.GRAWZ_std,
         yaxis: 'y1',
         type: 'scatter',
         name: 'GRAWZ std',
@@ -82,95 +87,81 @@ function plotMe(csvData, bestFrq) {
     });
 
 
-    // Gyro STD ax1
+    // Gyro Bias
     traces.push({
-        x: csvData.ax1.MFREQ,
-        y: csvData.ax1.GRAWX_std,
-        yaxis: 'y1',
+        x: csvData.MFREQ,
+        y: csvData.GRAWX,
+        yaxis: 'y2',
         type: 'scatter',
-        name: 'GRAWX std',
-        row: 1,
+        name: 'GRAWX Bias',
+        row: 2,
         col: 1
     });
 
     traces.push({
-        x: csvData.ax1.MFREQ,
-        y: csvData.ax1.GRAWY_std,
-        yaxis: 'y1',
+        x: csvData.MFREQ,
+        y: csvData.GRAWY,
+        yaxis: 'y2',
         type: 'scatter',
-        name: 'GRAWY std',
-        row: 1,
+        name: 'GRAWY Bias',
+        row: 2,
         col: 1
     });
 
     traces.push({
-        x: csvData.ax1.MFREQ,
-        y: csvData.ax1.GRAWZ_std,
-        yaxis: 'y1',
+        x: csvData.MFREQ,
+        y: csvData.GRAWZ,
+        yaxis: 'y2',
         type: 'scatter',
-        name: 'GRAWZ std',
-        row: 1,
+        name: 'GRAWZ Bias',
+        row: 2,
         col: 1
-    });    
+    });
 
 
     // Power
     traces.push({
-        x: csvData.ax0.MFREQ,
-        y: csvData.ax0.powDist,
-        yaxis: 'y2',
+        x: csvData.MFREQ,
+        y: csvData.powDist,
+        yaxis: 'y3',
         type: 'scatter',
         name: 'Power Distance',
-        row: 2,
+        row: 3,
         col: 1
     });
-
-    traces.push({
-        x: csvData.ax1.MFREQ,
-        y: csvData.ax1.powDist,
-        yaxis: 'y2',
-        type: 'scatter',
-        name: 'Power Distance',
-        row: 2,
-        col: 1
-    });
-
-    traces.push({
-        x: csvData.axC.MFREQ,
-        y: csvData.axC.powDist,
-        yaxis: 'y2',
-        type: 'scatter',
-        name: 'Power Distance',
-        row: 2,
-        col: 1
-    });
-
-    traces.push({
-        x: getIdxData(csvData.axC.MFREQ, bestFrq),
-        y: getIdxData(csvData.axC.powDist, bestFrq),
-        yaxis: 'y2',
-        type: 'scatter',
-        mode: 'markers',
-        name: 'Best Frequencies',
-        row: 2,
-        col: 1
-    });
+    
 
     // Define layout for subplots
     var layout = {
-        title: 'Best Operating Frequency',
-        grid: { rows: 2, columns: 1 },
+        title: tit + 'Best Operating Frequency',
+        grid: { rows: 3, columns: 1 },
         height: 600,
         xaxis: { title: 'Frequency [Hz]' },
+        legend: {
+            x: 1,
+            xanchor: 'top',
+            y: 1
+          }
     };
 
+    layout.annotation = [
+        {
+            text: "X1 title",
+            x: 90000,
+            y: 0.5,
+            xref: 'x',
+            yref: 'y1'
+        }
+    ];
+
     // Create subplots
-    Plotly.newPlot('plot', traces, layout);
+    Plotly.newPlot(plot_target, traces, layout);
+    //Plotly.newPlot('plot_EL', traces, layout);
 }
 
-function markDataTips(obj, bestFrq) {
+function markDataTips(plot_target, obj, bestFrq) {
 
-    var myPlot = document.getElementById('plot');
+    var myPlot = document.getElementById(plot_target);
 
     for (var i = 0; i < bestFrq.length; i++) {
         annotate_text = 'Frq. = ' + obj.MFREQ[bestFrq[i]]/1000 +
@@ -181,12 +172,12 @@ function markDataTips(obj, bestFrq) {
             x: obj.MFREQ[bestFrq[i]],
             y: obj.powDist[bestFrq[i]], 
             xref: 'x',
-            yref: 'y2'
+            yref: 'y3'
         }
-        annotations = plot.layout.annotations || [];
+        annotations = myPlot.layout.annotations || [];
         annotations.push(annotation);
 
-        Plotly.relayout('plot', { annotations: annotations })
+        Plotly.relayout(plot_target, { annotations: annotations })
     }
 
   
@@ -216,7 +207,6 @@ function handleDragOver(event) {
 }
 
 
-
 function downloadExampleCsv() {
 
     var csvUrl = 'https://raw.githubusercontent.com/amihayb/GyroDriftCalculator/main/example-measurement.csv';
@@ -239,17 +229,23 @@ function evalFrq(axObj) {
     const numRows = axObj.GRAWX_std.length;
     const norms = [];
     const powDist = [];
+    var pow1 = 0;
     var powDist1 = 0;
 
     for (let i = 0; i < numRows; i++) {
-        norms.push(Math.sqrt(axObj.GRAWX_std[i] ** 2 + axObj.GRAWY_std[i] ** 2 + axObj.GRAWZ_std[i] ** 2));
+        pow1 = Math.sqrt(axObj.GRAWX_std[i] ** 2 + axObj.GRAWY_std[i] ** 2 + axObj.GRAWZ_std[i] ** 2) + 
+        Math.sqrt(axObj.GRAWX[i] ** 2 + axObj.GRAWY[i] ** 2 + axObj.GRAWZ[i] ** 2);
+        if ( (axObj.GRAWX_std[i] > 0.2) || (axObj.GRAWY_std[i] > 0.2) || (axObj.GRAWZ_std[i] > 0.2)) {
+            pow1 = pow1 + 10;
+        }
+        norms.push(pow1);
     }
     axObj.power = norms;
 
     for (let i = 0; i < numRows; i++) {
         powDist1 = 0;
         for (let j = 0; j < numRows; j++) {
-            powDist1 = powDist1 + axObj.power[j] / (1 + Math.abs(j - i));
+            powDist1 = powDist1 + axObj.power[j] / (1 + Math.abs(j - i)**2);
         }
         powDist.push(powDist1);
     }
@@ -307,6 +303,31 @@ function findLocalMinima(arr) {
 }
 
 
+function findLocalMinimaWithWindow(data, windowSize) {
+    const localMinimaIndices = [];
+
+    for (let i = 0; i < data.length; i++) {
+        let isLocalMinima = true;
+
+        for (let j = Math.max(i - windowSize, 0); j <= Math.min(i + windowSize, data.length - 1); j++) {
+            if (data[i] > data[j]) {
+                isLocalMinima = false;
+                break;
+            }
+        }
+
+        if (isLocalMinima) {
+            // Found a local minimum
+            localMinimaIndices.push(i);
+        }
+    }
+
+    return localMinimaIndices;
+}
+
+
+
+
 function parseCsvToObjects(csvData) {
     const lines = csvData.trim().split('\n');
     let axis0Headers = [];
@@ -316,10 +337,18 @@ function parseCsvToObjects(csvData) {
     for (let i = 0; i < lines.length; i++) {
         if (lines[i].includes("Axis_0")) {
             var idx0 = i;
-            axis0Headers = removeBlanks(lines[i + 1]).split(',').map(header => header.trim());
+            if ( isNumericString(lines[i + 1]) ){
+                axis0Headers = ['MFREQ','GRAWX_rms','GRAWY_rms','GRAWZ_rms','GRAWX_std','GRAWY_std','GRAWZ_std','GRAWX','GRAWY','GRAWZ'];
+            } else {
+                axis0Headers = removeBlanks(lines[i + 1]).split(',').map(header => header.trim());
+            }
         } else if (lines[i].includes("Axis_1")) {
             var idx1 = i;
-            axis1Headers = removeBlanks(lines[i + 1]).split(',').map(header => header.trim());
+            if ( isNumericString(lines[i + 1]) ){
+                axis1Headers = ['MFREQ','GRAWX_rms','GRAWY_rms','GRAWZ_rms','GRAWX_std','GRAWY_std','GRAWZ_std','GRAWX','GRAWY','GRAWZ'];
+            } else {
+                axis1Headers = removeBlanks(lines[i + 1]).split(',').map(header => header.trim());
+            }
         }
     }
 
@@ -366,5 +395,6 @@ const getIdxData = (dataVector, indexes) => indexes.map(i => dataVector[i]);
 const normV = (vectorA, vectorB) => vectorA.map((valA, i) => Math.sqrt(valA ** 2 + vectorB[i] ** 2));
 // const normV = (vectorA, vectorB) => Math.sqrt(vectorA.reduce((acc, val, i) => acc + (val - vectorB[i]) ** 2, 0));
 const createVector = (start, end) => Array.from({ length: end - start + 1 }, (_, i) => start + i);
+const isNumericString = str => str.split(',').every(val => !isNaN(parseFloat(val.trim())));
 
 // const calculateY = (xValues, coefficients) => xValues.map(x => coefficients.reduce((acc, coeff, index) => acc + coeff * Math.pow(x, index), 0));
