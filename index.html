@@ -7,8 +7,8 @@
 	<title>Find Operating Frequency</title>
 	<link href="styles.css" rel="stylesheet">
 	<link rel="icon" href="images/logo-blau-robotics.ico" />
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.min.js"></script>
-	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<script src="regression.min.js"></script>
+	<script src="plotly.min.js"></script>
 </head>
 
 <body>
@@ -22,9 +22,10 @@
 			<img onclick="alert('Finds the best motor frequency for minimal gyro interference.\nFor anything more, contact me:\nAmihay Blau\nmail: amihay@blau-eng.co.il\nPhone: +972-54-6668902');" 
 			height="36" src="images/logo-title.svg" alt="Blau Robotics">
 	</div>
-	<div id="drop_zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+	<div id="drop_zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" onclick = >
 		Drag & Drop CSV File Here
 	</div>
+	<input type="file" id="file_input" style="display: none;">
 	<div class="row">
 		<div class="column">
 			<div id="plot_TR"></div>

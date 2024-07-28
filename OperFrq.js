@@ -1,10 +1,27 @@
 // Define a global variable to store parsed CSV data
 var csvData = {};
+var gyroBias = [];
 
+const dropZone = document.getElementById('drop_zone');
+const fileInput = document.getElementById('file_input');
+
+// Handle click to open file dialog
+dropZone.addEventListener('click', () => {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    handleFile(file);
+});
 
 function handleDrop(event) {
     event.preventDefault();
     var file = event.dataTransfer.files[0];
+    handleFile(file);
+}
+
+function handleFile(file) {
     var reader = new FileReader();
 
     reader.onload = function (e) {
@@ -52,6 +69,8 @@ function handleDrop(event) {
 
 function plotMe(plot_target, csvData, bestFrq, tit) {
     var traces = [];
+
+    const degS = '\u00B0';
 
     // Create traces for each y vector
 
@@ -130,10 +149,10 @@ function plotMe(plot_target, csvData, bestFrq, tit) {
         col: 1
     });
     
-
+    
     // Define layout for subplots
     var layout = {
-        title: tit + 'Best Operating Frequency',
+        title: tit + 'Best Operating Frequency<br>' + csvData.MFREQ[ bestFrq[ idxMin( bestFrq.map(i=>csvData.powDist[i]) ) ] ]/1000 + ' [kHz]',
         grid: { rows: 3, columns: 1 },
         height: 600,
         xaxis: { title: 'Frequency [Hz]' },
@@ -141,7 +160,19 @@ function plotMe(plot_target, csvData, bestFrq, tit) {
             x: 1,
             xanchor: 'top',
             y: 1
-          }
+          },
+          annotations: [{
+            x: 1.05,  // Position outside the plot area
+            y: 0.5,
+            xref: 'paper',
+            yref: 'paper',
+            text: 'Gyro Bias:' + '<br>X: ' + gyroBias[0].toFixed(2) + ' [' + degS + '/s]<br>Y: ' + gyroBias[1].toFixed(2) + ' [' + degS + '/s]' + 
+            '<br>Z: ' + gyroBias[2].toFixed(2) + ' [' + degS + '/s]',
+            showarrow: false,
+            xanchor: 'left',
+            yanchor: 'middle',
+            align: 'left'
+        }]
     };
 
     layout.annotation = [
@@ -232,9 +263,16 @@ function evalFrq(axObj) {
     var pow1 = 0;
     var powDist1 = 0;
 
+    gyroBias[0] = mean(axObj.GRAWX);
+    gyroBias[1] = mean(axObj.GRAWY);
+    gyroBias[2] = mean(axObj.GRAWZ);
+    axObj.GRAWX.forEach((value, index, array) => array[index] = value - gyroBias[0]);
+    axObj.GRAWY.forEach((value, index, array) => array[index] = value - gyroBias[1]);
+    axObj.GRAWZ.forEach((value, index, array) => array[index] = value - gyroBias[2]);
+
     for (let i = 0; i < numRows; i++) {
         pow1 = Math.sqrt(axObj.GRAWX_std[i] ** 2 + axObj.GRAWY_std[i] ** 2 + axObj.GRAWZ_std[i] ** 2) + 
-        Math.sqrt(axObj.GRAWX[i] ** 2 + axObj.GRAWY[i] ** 2 + axObj.GRAWZ[i] ** 2);
+        10*Math.sqrt(axObj.GRAWX[i] ** 2 + axObj.GRAWY[i] ** 2 + axObj.GRAWZ[i] ** 2);
         if ( (axObj.GRAWX_std[i] > 0.2) || (axObj.GRAWY_std[i] > 0.2) || (axObj.GRAWZ_std[i] > 0.2)) {
             pow1 = pow1 + 10;
         }
@@ -245,7 +283,7 @@ function evalFrq(axObj) {
     for (let i = 0; i < numRows; i++) {
         powDist1 = 0;
         for (let j = 0; j < numRows; j++) {
-            powDist1 = powDist1 + axObj.power[j] / (1 + Math.abs(j - i)**2);
+            powDist1 = powDist1 + axObj.power[j] / (1 + (j - i)**2);
         }
         powDist.push(powDist1);
     }
@@ -396,5 +434,7 @@ const normV = (vectorA, vectorB) => vectorA.map((valA, i) => Math.sqrt(valA ** 2
 // const normV = (vectorA, vectorB) => Math.sqrt(vectorA.reduce((acc, val, i) => acc + (val - vectorB[i]) ** 2, 0));
 const createVector = (start, end) => Array.from({ length: end - start + 1 }, (_, i) => start + i);
 const isNumericString = str => str.split(',').every(val => !isNaN(parseFloat(val.trim())));
+const mean = arr => arr.reduce((sum, val) => sum + val, 0) / arr.length;
+const idxMin = arr => arr.reduce((minIndex, currentValue, currentIndex, arr) => currentValue < arr[minIndex] ? currentIndex : minIndex, 0);
 
 // const calculateY = (xValues, coefficients) => xValues.map(x => coefficients.reduce((acc, coeff, index) => acc + coeff * Math.pow(x, index), 0));
