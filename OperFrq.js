@@ -23,16 +23,6 @@ function handleDrop(event) {
     dropZone.style.display = 'none';
 }
 
-const fileSelector = document.getElementById('file-selector');
-fileSelector.addEventListener('change', (event) => {
-  const fileList = event
-    .target.files;
-  console.log(fileList);
-  for (const file of fileList) {
-    handleFile(file);
-    dropZone.style.display = 'none';
-  }
-});
 
 function handleFile(file) {
     var reader = new FileReader();
@@ -288,8 +278,9 @@ function handleDragOver(event) {
 
 
 function downloadExampleCsv() {
+    
 
-    var csvUrl = 'https://raw.githubusercontent.com/amihayb/GyroDriftCalculator/main/example-measurement.csv';
+    var csvUrl = 'https://raw.githubusercontent.com/amihayb/FindOperFrq/main/example-measurement.csv';
 
     fetch(csvUrl)
         .then(response => response.blob())

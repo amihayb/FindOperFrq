@@ -46,7 +46,7 @@ body {
 #LogoBlau {
   margin-left: auto;
   margin-right: 20px; /* Add padding from the right edge */
-
+  cursor: pointer;
 }
 
 #drop_zone {
