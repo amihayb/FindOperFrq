@@ -4,6 +4,17 @@ body {
   color: #344563;
 }
 
+#file-selector {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
 .topnav {
   width: 100%;
   background-color: #ebf0f8;
@@ -30,6 +41,12 @@ body {
   left: 0;
   width: 100px; /* Adjust the width as needed */
   height: auto; /* Maintain aspect ratio */
+}
+
+#LogoBlau {
+  margin-left: auto;
+  margin-right: 20px; /* Add padding from the right edge */
+
 }
 
 #drop_zone {
@@ -70,6 +87,24 @@ body {
 .break {
   flex-basis: 100%;
   height: 6px;
+}
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  text-align: center; /* Center-aligns the text horizontally */
+  padding-left: 10px; /* Adds horizontal padding */
+  padding-right: 10px; /* Adds horizontal padding */
+}
+th {
+  font-weight: bold; /* Makes header row text bold */
+}
+#resultsTable {
+  margin-left: auto;
+  margin-right: auto; /* Centers the table horizontally */
+  margin-top: 20px; /* Adds padding before the table */
 }
 
 .plot {

@@ -13,13 +13,26 @@ dropZone.addEventListener('click', () => {
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     handleFile(file);
+    dropZone.style.display = 'none';
 });
 
 function handleDrop(event) {
     event.preventDefault();
     var file = event.dataTransfer.files[0];
     handleFile(file);
+    dropZone.style.display = 'none';
 }
+
+const fileSelector = document.getElementById('file-selector');
+fileSelector.addEventListener('change', (event) => {
+  const fileList = event
+    .target.files;
+  console.log(fileList);
+  for (const file of fileList) {
+    handleFile(file);
+    dropZone.style.display = 'none';
+  }
+});
 
 function handleFile(file) {
     var reader = new FileReader();
@@ -57,6 +70,12 @@ function handleFile(file) {
         console.log(bestFrq0);
         console.log(bestFrq1);
 
+        // console.log( csvData..ax0.MFREQ[bestFrq0[0]] );
+        const bestFrq0Val = bestFrq0.map(i => csvData.ax0.MFREQ[i]);
+        const bestFrq1Val = bestFrq1.map(i => csvData.ax1.MFREQ[i]);
+
+        updateResultsTable(bestFrq0Val, bestFrq1Val);
+
         plotMe('plot_TR', csvData.ax0, bestFrq0, 'Ax0 ');
         plotMe('plot_EL', csvData.ax1, bestFrq1, 'Ax1 ');
         markDataTips('plot_TR', csvData.ax0, bestFrq0);
@@ -64,6 +83,33 @@ function handleFile(file) {
     };
 
     reader.readAsText(file);
+}
+
+function updateResultsTable(bestFrq0, bestFrq1) {
+    // Get the table element
+    const table = document.getElementById('resultsTable');
+    // Clear existing rows
+    table.innerHTML = '';
+
+    // Create the header row
+    const headerRow = table.insertRow();
+    const headerCell0 = headerRow.insertCell(0);
+    const headerCell1 = headerRow.insertCell(1);
+    const headerCell2 = headerRow.insertCell(2);
+    headerCell0.innerHTML = "#";
+    headerCell1.innerHTML = "Best Frq. Ax 0 <br>[kHz]";
+    headerCell2.innerHTML = "Best Frq. Ax 1 <br>[kHz]";
+
+    // Create the data rows
+    for (let i = 0; i < 3; i++) {
+        const row = table.insertRow();
+        const cell0 = row.insertCell(0);
+        const cell1 = row.insertCell(1);
+        const cell2 = row.insertCell(2);
+        cell0.innerHTML = i + 1;
+        cell1.innerHTML = bestFrq0[i]/1000;
+        cell2.innerHTML = bestFrq1[i]/1000;
+    }
 }
 
 
@@ -172,7 +218,10 @@ function plotMe(plot_target, csvData, bestFrq, tit) {
             xanchor: 'left',
             yanchor: 'middle',
             align: 'left'
-        }]
+        }],
+        yaxis: {title: 'STD [' + degS + '/s]'},
+        yaxis2: {title: 'Bias [' + degS + '/s]'},
+        yaxis3: {title: 'Score'}
     };
 
     layout.annotation = [
@@ -342,7 +391,7 @@ function findLocalMinima(arr) {
 
 
 function findLocalMinimaWithWindow(data, windowSize) {
-    const localMinimaIndices = [];
+    var localMinimaIndices = [];
 
     for (let i = 0; i < data.length; i++) {
         let isLocalMinima = true;
@@ -359,6 +408,8 @@ function findLocalMinimaWithWindow(data, windowSize) {
             localMinimaIndices.push(i);
         }
     }
+
+    localMinimaIndices = rearrangeIndices(data, localMinimaIndices);
 
     return localMinimaIndices;
 }
@@ -427,7 +478,6 @@ function parseCsvToObjects(csvData) {
     return { ax0, ax1 };
 }
 
-
 const removeBlanks = str => str.replace(/\s/g, '');
 const getIdxData = (dataVector, indexes) => indexes.map(i => dataVector[i]);
 const normV = (vectorA, vectorB) => vectorA.map((valA, i) => Math.sqrt(valA ** 2 + vectorB[i] ** 2));
@@ -436,5 +486,8 @@ const createVector = (start, end) => Array.from({ length: end - start + 1 }, (_,
 const isNumericString = str => str.split(',').every(val => !isNaN(parseFloat(val.trim())));
 const mean = arr => arr.reduce((sum, val) => sum + val, 0) / arr.length;
 const idxMin = arr => arr.reduce((minIndex, currentValue, currentIndex, arr) => currentValue < arr[minIndex] ? currentIndex : minIndex, 0);
+const nthLowestValue = (array, N) => [...array].sort((a, b) => a - b)[N - 1];
+const nthLowestValueIndex = (array, N) => array.map((val, idx) => [val, idx]).sort((a, b) => a[0] - b[0])[N - 1][1];
+const rearrangeIndices = (data, indices) => indices.map(i => [data[i], i]).sort((a, b) => a[0] - b[0]).map(item => item[1]);
 
 // const calculateY = (xValues, coefficients) => xValues.map(x => coefficients.reduce((acc, coeff, index) => acc + coeff * Math.pow(x, index), 0));
